@@ -1,3 +1,4 @@
+# bot.py'nin tam ve düzeltilmiş içeriği
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import base58
@@ -21,6 +22,7 @@ from solana.exceptions import SolanaRpcException
 TOKEN = "8373054661:AAFgagvDGg6SjFH29I7yk3lHZW30w1TyDMM" 
 
 # 2. 5SIM.NET KULLANICI API ANAHTARINIZ (JWT FORMATINDA)
+# 🚨 BURAYI KENDİ YENİ ANAHTARINIZLA DEĞİŞTİRMENİZ GEREKİYOR (401 HATASI İÇİN)
 FIVESIM_API_KEY = "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3OTczNDQ0ODMsImlhdCI6MTc2NTgwODQ4MywicmF5IjoiODNjODAyYTc5OGZjZjBkODlhZmViYjIxZDFjYjBjMWYiLCJzdWIiOjI5Mzk0MTl9.vmCd53FtNtPaiwsDpFTxWqdkbUGFQd1RWP_GSRp2B4YAKeUcw5k0yCqtF9HSt-Fgz_UZwa-3m3h8KyWN0jor-gKJ4dpVns_3D9kokI-BVxu-yR1sx3ux0n2HcK1ubeDDw6SCBTnVyjD3-JCqpsdtb4CZig0NeWsChL_DSs41TiMfSok3Ev_lNnT_gkSdBvC_IdNRw7BKD5bauUg8AHCwH4odQF1Gw8MUP2ozpmxkd137bpkw80-PPeZt_0VIfPm-OAwKuxPUkuw0zDGGzFqFO8kpefKo45jalizu7j5UzcAjihq2qVYPGFXPJ3rd1sPNm-K5tC0DoB2uVhcP0i8hNw" 
 
 # 3. Kârınızın Yatırılacağı Solana Cüzdan Adresi
@@ -84,16 +86,16 @@ FIVESIM_COUNTRIES = {
     "south africa": "🇿🇦 South Africa"
 }
 FIVESIM_SERVICES = {
-    "whatsapp": "💬 WhatsApp", "telegram": "✈️ Telegram", "discord": "🎮 Discord", "twitter": "🐦 X (Twitter)",
-    "instagram": "📸 Instagram", "facebook": "👍 Facebook", "steam": "🔥 Steam",
+    "whatsapp": " WhatsApp", "telegram": " Telegram", "discord": " Discord", "twitter": " X (Twitter)",
+    "instagram": " Instagram", "facebook": " Facebook", "steam": " Steam",
 }
 LOCKED_SERVICES = [
-    {"service": "binance", "name": "🟡 Binance 🔒"},
-    {"service": "cashapp", "name": "💵 Cash App 🔒"},
-    {"service": "paypal", "name": "🅿️ PayPal 🔒"},
-    {"service": "wechat", "name": "💚 WeChat 🔒"},
-    {"service": "alipay", "name": "💙 Alipay 🔒"},
-    {"service": "stripe", "name": "💳 Stripe 🔒"},
+    {"service": "binance", "name": " Binance 🔒"},
+    {"service": "cashapp", "name": " Cash App 🔒"},
+    {"service": "paypal", "name": " PayPal 🔒"},
+    {"service": "wechat", "name": " WeChat 🔒"},
+    {"service": "alipay", "name": " Alipay 🔒"},
+    {"service": "stripe", "name": " Stripe 🔒"},
 ]
 
 # --- DİL TANIMLARI (YALNIZCA EN ve ZH) ---
@@ -983,7 +985,7 @@ def callback(call):
     elif call.data == "wallet_generate":
         public_key = generate_and_save_wallet(uid)
         
-        balance_float = get_sol_balance(public_key)
+        balance_float = get_solana_balance(public_key)
         balance_text = f"{balance_float:.8f} SOL" if balance_float >= 0 else t['api_fail_service'] 
         
         message_text = (
@@ -1074,6 +1076,7 @@ def test_fivesim_api():
             else:
                 error_message = f"HTTP {response.status_code}"
                 try:
+                    # 401 hatası genellikle yanıt gövdesinde JSON döndürmez, bu yüzden hata mesajı eklenir.
                     error_detail = response.json().get('error', 'API Server Error')
                     error_message += f" - Detail: {error_detail}"
                 except:
@@ -1107,8 +1110,8 @@ def test_fivesim_api():
         print("--- 5SIM BALANCE CHECK FAILED ---")
         print(f"❌ HTTP Status: {http_status}")
         print(f"❌ Error Message: {balance_result['message']}")
-        if http_status == 403:
-            print("\n*** ⚠️ 403 ALERT: Your Key is likely INVALID or restricted. ***")
+        if http_status == 403 or http_status == 401: # 401 de eklendi
+            print("\n*** ⚠️ 401/403 ALERT: Your Key is likely INVALID, expired, or restricted. ***")
             print("*** Please get a NEW JWT Key from 5sim.net and copy it correctly to 'FIVESIM_API_KEY'. ***")
 
 
@@ -1121,7 +1124,8 @@ def test_fivesim_api():
             if first_country != "N/A":
                 details = get_fivesim_service_price(first_service, first_country)
                 print(f"✅ Price Fetch Successful (Guest API): {first_service}/{first_country}")
-                print(f"   Final Price (SOL, including profit): {details.get('sale_sol_price')}, Stock: {details.get('stock')}")
+                # Önceki ValueError hatasının düzeltilmiş hali (Satır 1172'nin bulunduğu kısım)
+                print(f"   Final Price (SOL, including profit): {details.get('sale_sol_price')} SOL, Stock: {details.get('stock')}")
             else:
                  print(f"❌ Price Fetch Failed: No country found under first service ({first_service}).")
         else:
